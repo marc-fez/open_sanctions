@@ -1,0 +1,26 @@
+---
+version: '3.8'
+
+services:
+  app:
+    build: .
+    command: uvicorn app.main:app --reload --workers 1 \
+      --host 0.0.0.0 --port 8000
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - 8004:8000
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@app-db:5432/web_dev
+      - DATABASE_TEST_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@app-db:5432/web_test
+    depends_on:
+      - app-db
+  app-db:
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
